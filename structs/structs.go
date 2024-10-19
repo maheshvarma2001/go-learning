@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"time"
 )
@@ -12,9 +13,28 @@ type user struct {
 	createdAt time.Time
 }
 
-func (u user) outputUserDetails() {
+func (u *user) outputUserDetails() {
 
 	fmt.Println(u.firstName, u.lastName, u.birthDate)
+}
+
+func (u *user) clearUserName() {
+	u.firstName = ""
+	u.lastName = ""
+}
+
+func newUser(firstName, lastName, birthDate string) (*user, error) {
+
+	if firstName == "" || lastName == "" || birthDate == "" {
+		return nil, errors.New("first name , last name and birth date are required")
+	}
+
+	return &user{
+		firstName: firstName,
+		lastName:  lastName,
+		birthDate: birthDate,
+		createdAt: time.Now(),
+	}, nil
 }
 
 func main() {
@@ -22,25 +42,24 @@ func main() {
 	userLastName := getUserData("Please Enter your last name: ")
 	userBirthDate := getUserData("Please Enter your birthdate (MM/DD?YYYY): ")
 
-	var appUser user
+	var appUser *user
 
-	appUser = user{
-		firstName: userFirstName,
-		lastName:  userLastName,
-		birthDate: userBirthDate,
-		createdAt: time.Now(),
+	appUser, err := newUser(userFirstName, userLastName, userBirthDate)
+
+	if err != nil {
+		fmt.Println(err)
+		return
 	}
 
-	outputUserDetails(&appUser)
-}
+	appUser.outputUserDetails()
+	appUser.clearUserName()
+	appUser.outputUserDetails()
 
-func outputUserDetails(u *user) {
-	fmt.Println(u.firstName, u.lastName, u.birthDate)
 }
 
 func getUserData(promtText string) string {
 	fmt.Print(promtText)
 	var value string
-	fmt.Scan(&value)
+	fmt.Scanln(&value) // Scanln to accept empty lines
 	return value
 }
